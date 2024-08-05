@@ -1,0 +1,1 @@
+print("How should A file behave")
