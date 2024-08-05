@@ -11,13 +11,13 @@ class project_creator:
     def __init__(self) -> None:    
         project_info = input("Enter complete detail of the project: ")
         self.project_details = gpt_bot(
-            "Act as a professional consultant, your job is to understand user need and what user wants to create as in project, and according to your understanding describe the working and of the project and how such project should be create in python. Just describe in english without writing any code",
+            "Act as a professional consultant, your job is to understand user need and what user wants to create as in project, and according to your understanding describe the working and of the project and how such project should be create in python without using media files. Just describe in english without writing any code",
             project_info
             )
         # print(self.project_details)
 
         file_structure = gpt_bot(
-            "You are lazy python developer who create small and very clean structured python projects which only works on terminal without graphics music or images. Your job it to understand user project and create a full project structure with standard naming conventions of files and folder followed for python projects, do not create testing files. Your output must only contain the file structure",
+            "You are lazy python developer who create small and very clean structured python projects without using media files like music or images. Your job it to understand user project and create a full project structure with standard naming conventions of files and folder followed for python projects, do not create testing files. Your output must only contain the file structure",
             self.project_details
             )
         self.file_structure = identifier(file_structure)

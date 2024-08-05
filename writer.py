@@ -4,32 +4,15 @@ import shutil
 # Define the base directory
 base_dir = 'project'
 
-# Define the file structure
+# Define the file structure to create
 file_structure = [
-    'minesweeper/__init__.py', 
-    'minesweeper/game.py', 
-    'minesweeper/board.py', 
-    'minesweeper/cell.py', 
-    'minesweeper/ui.py', 
-    'main.py', 
-    'README.md', 
-    'requirements.txt', 
-    'assets/images/mine.png', 
-    'assets/images/flag.png', 
-    'assets/images/numbers/0.png', 
-    'assets/images/numbers/1.png', 
-    'assets/images/numbers/2.png', 
-    'assets/images/numbers/3.png', 
-    'assets/images/numbers/4.png', 
-    'assets/images/numbers/5.png', 
-    'assets/images/numbers/6.png', 
-    'assets/images/numbers/7.png', 
-    'assets/images/numbers/8.png'
+    'todo_list_app/app.py',
+    'todo_list_app/tasks.py'
 ]
 
 def clean_directory(directory):
     """
-    Remove all contents of the specified directory.
+    Remove all files and directories inside the given directory.
     """
     for item in os.listdir(directory):
         item_path = os.path.join(directory, item)
@@ -42,18 +25,25 @@ def create_file_structure(base_dir, file_structure):
     """
     Create the specified file structure inside the base directory.
     """
-    for file_path in file_structure:
-        full_path = os.path.join(base_dir, file_path)
+    for path in file_structure:
+        full_path = os.path.join(base_dir, path)
         dir_name = os.path.dirname(full_path)
+        
+        # Create directories if they don't exist
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
-        with open(full_path, 'w') as f:
-            pass  # Create an empty file
+        
+        # Create the empty file
+        open(full_path, 'w').close()
 
-# Clean the base directory
-clean_directory(base_dir)
+def main():
+    # Clean the base directory
+    clean_directory(base_dir)
+    
+    # Create the specified file structure
+    create_file_structure(base_dir, file_structure)
+    
+    print(f"Cleaned '{base_dir}' and created the specified file structure.")
 
-# Create the specified file structure
-create_file_structure(base_dir, file_structure)
-
-print("Directory cleaned and file structure created successfully.")
+if __name__ == "__main__":
+    main()
