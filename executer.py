@@ -43,8 +43,8 @@ def watch_and_execute_file(file_to_watch):
 
 if __name__ == "__main__":
     # Get the file path of the script itself
-    file_to_watch = '/Users/sarveshschauhan/Documents/Atri/creator.py'
-    
+    file_to_watch = os.path.join(os.getcwd(), 'writer.py')
+    # print(file_to_watch)
     watch_and_execute_file(file_to_watch)
 
     # Example functionality to show execution
