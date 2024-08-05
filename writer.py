@@ -6,19 +6,30 @@ base_dir = 'project'
 
 # Define the file structure
 file_structure = [
-    'tic_tac_toe/__init__.py',
-    'tic_tac_toe/board.py',
-    'tic_tac_toe/player.py',
-    'tic_tac_toe/game.py',
-    'main.py',
-    'README.md',
-    'requirements.txt',
-    'setup.py'
+    'minesweeper/__init__.py', 
+    'minesweeper/game.py', 
+    'minesweeper/board.py', 
+    'minesweeper/cell.py', 
+    'minesweeper/ui.py', 
+    'main.py', 
+    'README.md', 
+    'requirements.txt', 
+    'assets/images/mine.png', 
+    'assets/images/flag.png', 
+    'assets/images/numbers/0.png', 
+    'assets/images/numbers/1.png', 
+    'assets/images/numbers/2.png', 
+    'assets/images/numbers/3.png', 
+    'assets/images/numbers/4.png', 
+    'assets/images/numbers/5.png', 
+    'assets/images/numbers/6.png', 
+    'assets/images/numbers/7.png', 
+    'assets/images/numbers/8.png'
 ]
 
 def clean_directory(directory):
     """
-    Remove all files and folders inside the given directory.
+    Remove all contents of the specified directory.
     """
     for item in os.listdir(directory):
         item_path = os.path.join(directory, item)
@@ -29,25 +40,20 @@ def clean_directory(directory):
 
 def create_file_structure(base_dir, file_structure):
     """
-    Create the file structure inside the base directory.
+    Create the specified file structure inside the base directory.
     """
     for file_path in file_structure:
         full_path = os.path.join(base_dir, file_path)
-        dir_path = os.path.dirname(full_path)
-        
-        # Create directories if they don't exist
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
-        
-        # Create empty files
+        dir_name = os.path.dirname(full_path)
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
         with open(full_path, 'w') as f:
-            pass
+            pass  # Create an empty file
 
-if __name__ == "__main__":
-    # Clean the base directory
-    clean_directory(base_dir)
-    
-    # Create the file structure
-    create_file_structure(base_dir, file_structure)
-    
-    print(f"Directory '{base_dir}' has been cleaned and the file structure has been created.")
+# Clean the base directory
+clean_directory(base_dir)
+
+# Create the specified file structure
+create_file_structure(base_dir, file_structure)
+
+print("Directory cleaned and file structure created successfully.")

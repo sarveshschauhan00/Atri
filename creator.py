@@ -17,7 +17,7 @@ class project_creator:
         # print(self.project_details)
 
         file_structure = gpt_bot(
-            "You are lazy python developer who create small and very clean structured python projects. Your job it to understand user project and create a full project structure with standard naming conventions of files and folder followed for python projects, do not create testing files. Your output must only contain the file structure",
+            "You are lazy python developer who create small and very clean structured python projects which only works on terminal without graphics music or images. Your job it to understand user project and create a full project structure with standard naming conventions of files and folder followed for python projects, do not create testing files. Your output must only contain the file structure",
             self.project_details
             )
         self.file_structure = identifier(file_structure)
@@ -63,7 +63,7 @@ Extra information: {flow}
 """
         files_code_str = ""
         for file in self.project_files:
-            print(file)
+            print("Generating code for: ", file)
             if file[-3:] == ".py":
                 python_code = identifier(gpt_bot(system_content, user_content.format(file_name=file, project_description=self.project_details, flow=self.flow) + files_code_str)).replace("python", "")
                 self.files_code[file] = python_code
