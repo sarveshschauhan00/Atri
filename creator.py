@@ -26,13 +26,40 @@ class project_creator:
         self.files_code = {}
 
         self.project_directory_creator()
-        self.file_writer()
+
+        # self.file_writer()
 
     def project_directory_creator(self):
-        response = quick_bot(f"generate a python list of all the files relative location of the given file structure, list should be sorted according to how the files expected to be written according to the python developer, name of the base directory also return a string showing extected imports flow of pythons files only on one another. Your output will be a json of structure" + ' {"files": [""], "flow": ""}' + f"\n\nfile structure:\n{self.file_structure}.")
+        response = quick_bot(f"generate a python list of all the files relative location of the given file structure, list should be sorted according to how the files expected to be written according to the python developer, name of the base directory also return a string showing interdependents files. Your output will be a json of structure" + ' {"files": [""], "flow": ""}' + f"\n\nfile structure:\n{self.file_structure}.")
         self.project_files = response["files"]
         self.flow = response["flow"]
+
+        self.related_files = quick_bot((
+            "You are a experienced python developer, you are given a file structure "
+            "and list of all the file paths, your job is to generate a list of lists containing less the 8 items, "
+            "where closely related files paths are clubbed together for code analysis, "
+            "these files should make sense with each other by having possibility of code sharing. "
+            "And generate list of different such possible combinations. And inner list should be sorted in order of their relation and outer list should also be sorted on the basis of priority "
+            ". All Generated lists shoud have a between link in order to which information had kept in mind to create another related files"
+            '\n\nYou output must only contain list of lists of such path in json format given-> {"related_files": [[<list of related file paths>]]}'
+            f"\n\nFile Structure:\n{self.file_structure}\n\n\nAll Paths:\n{self.project_files}\n\nRelations:{self.flow}"
+            ))['related_files']
+        
+        print((
+            "You are a experienced python developer, you are given a file structure "
+            "and list of all the files, your job is to generate a list of lists of file paths, "
+            "where closely related files paths are clubbed together for code analysis, "
+            "these files should make sense with each other by having possibility of code sharing. "
+            "And generate list of different such possible combinations. And inner list should be sorted in order of their relation and outer list should also be sorted on the basis of priority "
+            ". All Generated lists shoud have a link inorder to which information had kept in mind to create another related files"
+            '\n\nYou output must only contain list of lists of such path in json format given-> {"related_files": [[<list of related file paths>]]}'
+            f"\n\nFile Structure:\n{self.file_structure}\n\n\nAll Paths:\n{self.project_files}\n\nRelations:{self.flow}"
+            ))
+
         print(self.project_files)
+        print('\n===========================================\n')
+        print(self.related_files)
+        print('\n===========================================\n')
         print(self.flow)
 
         system_content = "Be a professional python developer, you have a base directory called 'project', you job is to write a python code to clean everything inside this directory and create all the empty files and folders given by user inside this directory"

@@ -4,16 +4,33 @@ import shutil
 # Define the base directory
 base_dir = 'project'
 
-# Define the file structure to create
+# Define the file structure
 file_structure = [
-    'todo_list_app/app.py',
-    'todo_list_app/tasks.py'
+    'todo-list-app/backend/app/__init__.py',
+    'todo-list-app/backend/app/models.py',
+    'todo-list-app/backend/app/routes.py',
+    'todo-list-app/backend/app/config.py',
+    'todo-list-app/backend/run.py',
+    'todo-list-app/backend/requirements.txt',
+    'todo-list-app/backend/migrations/',
+    'todo-list-app/backend/venv/',
+    'todo-list-app/frontend/public/index.html',
+    'todo-list-app/frontend/src/assets/',
+    'todo-list-app/frontend/src/components/TaskList.vue',
+    'todo-list-app/frontend/src/components/TaskItem.vue',
+    'todo-list-app/frontend/src/components/TaskForm.vue',
+    'todo-list-app/frontend/src/store/index.js',
+    'todo-list-app/frontend/src/views/',
+    'todo-list-app/frontend/src/App.vue',
+    'todo-list-app/frontend/src/main.js',
+    'todo-list-app/frontend/.gitignore',
+    'todo-list-app/frontend/babel.config.js',
+    'todo-list-app/frontend/package.json',
+    'todo-list-app/frontend/README.md'
 ]
 
 def clean_directory(directory):
-    """
-    Remove all files and directories inside the given directory.
-    """
+    """Remove all contents of the given directory."""
     for item in os.listdir(directory):
         item_path = os.path.join(directory, item)
         if os.path.isfile(item_path) or os.path.islink(item_path):
@@ -22,28 +39,22 @@ def clean_directory(directory):
             shutil.rmtree(item_path)
 
 def create_file_structure(base_dir, file_structure):
-    """
-    Create the specified file structure inside the base directory.
-    """
+    """Create the given file structure inside the base directory."""
     for path in file_structure:
         full_path = os.path.join(base_dir, path)
-        dir_name = os.path.dirname(full_path)
+        dir_path = os.path.dirname(full_path)
         
-        # Create directories if they don't exist
-        if not os.path.exists(dir_name):
-            os.makedirs(dir_name)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
         
-        # Create the empty file
-        open(full_path, 'w').close()
+        if not path.endswith('/'):
+            with open(full_path, 'w') as f:
+                pass
 
-def main():
-    # Clean the base directory
-    clean_directory(base_dir)
-    
-    # Create the specified file structure
-    create_file_structure(base_dir, file_structure)
-    
-    print(f"Cleaned '{base_dir}' and created the specified file structure.")
+# Clean the base directory
+clean_directory(base_dir)
 
-if __name__ == "__main__":
-    main()
+# Create the file structure
+create_file_structure(base_dir, file_structure)
+
+print("Directory cleaned and file structure created successfully.")
