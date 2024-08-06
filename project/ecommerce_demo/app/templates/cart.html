@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Cart - E-commerce Demo{% endblock %}
+
+{% block content %}
+    <h2>Your Cart</h2>
+    {% if cart %}
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="cart-items">
+                {% for item in cart %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.price }}</td>
+                        <td>${{ item.price * item.quantity }}</td>
+                        <td>
+                            <button class="btn remove-from-cart" data-product-id="{{ item.id }}">Remove</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="cart-total" id="total-price">
+            Total: ${{ total_price }}
+        </div>
+        <div class="cart-actions">
+            <a href="{{ url_for('main.checkout') }}" class="btn">Checkout</a>
+        </div>
+    {% else %}
+        <p>Your cart is empty.</p>
+    {% endif %}
+{% endblock %}

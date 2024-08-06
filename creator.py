@@ -1,9 +1,10 @@
 from openai import OpenAI
 import json
 import os
+import shutil
 
 
-client = OpenAI(api_key="sk-proj-h2ACTULQJBaXBC9K16gXT3BlbkFJVAHzm0cl1pUahrAz98Zi")
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 BASE_FOLDER = "project"
 
 codetype_names = {
@@ -12,7 +13,9 @@ codetype_names = {
     'js': 'javascript\n',
     'py': 'python\n',
     'vue': 'vue\n',
-    'csv': 'csv\n'
+    'csv': 'csv\n',
+    'json': 'json\n',
+    'txt': 'plaintext\n'
 }
 
 
@@ -26,7 +29,7 @@ class project_creator:
         print(self.project_details)
 
         file_structure = gpt_bot(
-            "You are lazy python developer who create small and very clean structured python projects without using media files like music or images. Your job it to understand user project and create a full project structure with standard naming conventions of files and folder followed for python projects, do not create testing files. Your output must only contain the file structure",
+            "You are lazy python developer who create small and very clean structured python projects. Your job it to understand user project and create a full project structure with each and every file name at base level with standard naming conventions of files and folder followed for python projects, do not create testing files. Your output must only contain the file structure",
             self.project_details
             )
         self.file_structure = identifier(file_structure)
@@ -40,35 +43,32 @@ class project_creator:
 
     def project_directory_creator(self):
         response = quick_bot(f"generate a python list of all the files relative location of the given file structure, list should be sorted according to how the files expected to be written according to the python developer, name of the base directory also return a string showing interdependents files. Your output will be a json of structure" + ' {"files": [""], "flow": ""}' + f"\n\nfile structure:\n{self.file_structure}.")
+        
         self.project_files = response["files"]
         self.flow = response["flow"]
 
-        self.related_files = quick_bot((
-            "You are a experienced python developer, you are given a file structure "
-            "and list of all the files, your job is to generate a list of 1-D lists of file paths based on given instructions, "
-            "where closely related files paths are clubbed together for code analysis, "
-            "these files should make sense with each other by having possibility of code sharing. "
-            "And generate list of different such possible combinations. And inner list should be sorted in order of their relation and outer list should also be sorted on the basis of priority "
-            ". All Generated lists should have common elements with other lists in order to which they are created "
-            '\n\nYour output must only contain list of lists of such path in json format given-> {"related_files": [[<list of related files path>]]}'
-            f"\n\nFile Structure:\n{self.file_structure}\n\n\nAll Paths:\n{self.project_files}\n\nRelations:{self.flow}"
-            ))['related_files']
-        
+        # self.related_files = quick_bot((
+        #     "You are a experienced python developer, you are given a file structure "
+        #     "and list of all the files, your job is to generate a list of 1-D lists of file paths based on given instructions, "
+        #     "where closely related files paths are clubbed together for code analysis, "
+        #     "these files should make sense with each other by having possibility of code sharing. "
+        #     "And generate list of different such possible combinations. And inner list should be sorted in order of their relation and outer list should also be sorted on the basis of priority "
+        #     ". All Generated lists should have common elements with other lists in order to which they are created "
+        #     '\n\nYour output must only contain list of lists of such path in json format given-> {"related_files": [[<list of related files path>]]}'
+        #     f"\n\nFile Structure:\n{self.file_structure}\n\n\nAll Paths:\n{self.project_files}\n\nRelations:{self.flow}"
+        #     ))['related_files']
 
         print(self.project_files)
         print('\n===========================================\n')
-        print(self.related_files)
+        # print(self.related_files)
         print('\n===========================================\n')
         print(self.flow)
 
-        system_content = "Be a professional python developer, you have a base directory called 'project', you job is to write a python code to clean everything inside this directory and create all the empty files and folders given by user inside this directory"
-        python_code = identifier(gpt_bot(
-            system_content,
-            f"File structure:\n\n{self.project_files}"
-        )).replace("python\n", "")
-        with open('writer.py', 'w') as f:
-            f.write(python_code)
-        # print(python_code)
+        # Clean the base directory
+        clean_directory(BASE_FOLDER)
+
+        # Create the file structure
+        create_file_structure(BASE_FOLDER, self.project_files)
 
     def file_writer(self):
         system_content = """You are a professional software developer with knowledge of all the file structures and standards followed in every language
@@ -79,36 +79,43 @@ class project_creator:
 
 """
 
-        user_content = """Analyze the based on the project description and code of each file and teir dependencies on each other and Write a high quality code by keeping track of related files generate code for the file {file_name}
+        user_content = """Analyze the based on the project description and code of each file and their dependencies on each other and Write a high quality code by keeping track of related files generate code for the file {file_name}
+Highly causious of relative paths and imports
 
 Project description:
 {project_description}
 
-Extra information: {flow}
+Project structure:
+{structure}
+
+Project life flow: {flow}
 
 """
-        for clubbed_files in self.related_files:
-            for file in clubbed_files:
-                if file.split('.')[-1] in ['txt', 'md', 'gitignore'] or file in self.files_code:
-                    continue
+        for i in range(len(self.project_files)):
 
-                files_code_str = ""
-                for file_ in clubbed_files:
-                    if file_ in self.files_code and file_ != file:
-                        files_code_str += f"Code for File name and Relative Path: {file_}\n\n{self.files_code[file_]}\n\n\n"
+            file = self.project_files[i]
+            if file.split('.')[-1].lower() in ['md', 'gitignore', 'jpg', 'jpeg', 'png'] or file in self.files_code:
+                continue
 
-                print("Generating code for: ", file)
-                code = identifier(
-                    gpt_bot(
-                        system_content,
-                        user_content.format(
-                            file_name=file, 
-                            project_description=self.project_details, 
-                            flow=self.flow) + files_code_str
-                        )
-                    ).replace(codetype_names[file.split('.')[-1]], "")
-                self.files_code[file] = code
-                content_writer(file, code)
+            files_code_str = ""
+            for k in self.project_files[ max(0, -5+i) :i]:
+                files_code_str += f"CODE for FILE NAME and PATH: {self.files_code[k]}:\n" + "="*50 + "\n\n"
+
+            print("Generating code for: ", file)
+            # print(files_code_str)
+
+            code = identifier(
+                gpt_bot(
+                    system_content,
+                    user_content.format(
+                        file_name=file, 
+                        structure=self.file_structure, 
+                        project_description=self.project_details, 
+                        flow=self.flow) + files_code_str
+                    )
+                ).replace(codetype_names[file.split('.')[-1]], "")
+            self.files_code[file] = code
+            content_writer(file, code)
 
 
 
@@ -161,6 +168,25 @@ def quick_bot(user_content, model="gpt-4o-mini", temperature=0.0):
     )
     # print(response)
     return json.loads(response.choices[0].message.content)
+
+
+def clean_directory(directory):
+    """Remove all contents of the specified directory."""
+    for item in os.listdir(directory):
+        item_path = os.path.join(directory, item)
+        if os.path.isfile(item_path) or os.path.islink(item_path):
+            os.unlink(item_path)
+        elif os.path.isdir(item_path):
+            shutil.rmtree(item_path)
+
+def create_file_structure(base_dir, file_structure):
+    """Create the specified file structure inside the base directory."""
+    for file_path in file_structure:
+        full_path = os.path.join(base_dir, file_path)
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        if file_path[-1] != '/':
+            with open(full_path, 'w') as f:
+                pass  # Create an empty file
 
 
 
