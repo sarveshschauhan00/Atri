@@ -2,6 +2,7 @@ from openai import OpenAI
 import json
 import os
 import shutil
+from reader import get_directory_structure_as_string
 
 
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
@@ -19,56 +20,66 @@ codetype_names = {
 }
 
 
-class project_creator:
-    def __init__(self) -> None:    
-        project_info = input("Enter complete detail of the project: ")
+class ProjectCreator:
+    def __init__(self, project_info) -> None:
         self.project_details = gpt_bot(
-            "Act as a professional consultant, your job is to understand user need and what user wants to create as in project, and according to your understanding describe the working and of the project and how such project should be create in python without using media files. Just describe in detail all the important parts and conerns in englilsh. Do not write any code",
+            "Act as a python developer consultant, your job is to understand user need and what user wants to create as in project, and according to your understanding describe the working of the project and how to create this in python. Give this project a name and then tell structure of this project in detail in very clear language in less than 1000 words",
             project_info
             )
         print(self.project_details)
 
         file_structure = gpt_bot(
-            "You are lazy python developer who create small and very clean structured python projects. Your job it to understand user project and create a full project structure with each and every file name at base level with standard naming conventions of files and folder followed for python projects, do not create testing files. Your output must only contain the file structure",
+            "You are lazy python developer who create small and very clean structured python projects. Your job it to understand project given by user and create a full project structure with each and every file name with standard naming conventions of files and folder followed for python projects, project should be simple and easy to understand. Your output must only contain the file structure",
             self.project_details
             )
         self.file_structure = identifier(file_structure)
         print(self.file_structure)
 
-        self.files_code = {}
+        self.file_codes = {}
 
         self.project_directory_creator()
 
-        self.file_writer()
+        print(self.file_paths)
+        print(self.flow)
+        print(self.packages)
+
+        # self.file_writer()
 
     def project_directory_creator(self):
-        response = quick_bot(f"generate a python list of all the files relative location of the given file structure, list should be sorted according to how the files expected to be written according to the python developer, name of the base directory also return a string showing interdependents files. Your output will be a json of structure" + ' {"files": [""], "flow": ""}' + f"\n\nfile structure:\n{self.file_structure}.")
-        
-        self.project_files = response["files"]
+        response = quick_bot(
+            f"As a professional software developer analyze the given file structure and understand the project and it's functioning and do the following:\n1. generate a python list of string of all files path from root directory and list should be sorted in accordance to the how they should be created"
+            "\n2. create flow of the project files in one long string\n\n"
+            "Your output will be a json of structure" + ' {"files": [""], "flow": ""}' + f"\n\nfile structure:\n{self.file_structure}."
+        )
+        self.file_paths = response["files"]
         self.flow = response["flow"]
 
-        # self.related_files = quick_bot((
-        #     "You are a experienced python developer, you are given a file structure "
-        #     "and list of all the files, your job is to generate a list of 1-D lists of file paths based on given instructions, "
-        #     "where closely related files paths are clubbed together for code analysis, "
-        #     "these files should make sense with each other by having possibility of code sharing. "
-        #     "And generate list of different such possible combinations. And inner list should be sorted in order of their relation and outer list should also be sorted on the basis of priority "
-        #     ". All Generated lists should have common elements with other lists in order to which they are created "
-        #     '\n\nYour output must only contain list of lists of such path in json format given-> {"related_files": [[<list of related files path>]]}'
-        #     f"\n\nFile Structure:\n{self.file_structure}\n\n\nAll Paths:\n{self.project_files}\n\nRelations:{self.flow}"
-        #     ))['related_files']
+        output = '{"isolated_groups": [[<files paths>]]}'
+        response = quick_bot(
+            f'''Act as a professional python developer. You are given project description, it's file structure and file paths
+Analyze given project description and it's file structure your job is to analyze dependencies of files on each other.
+Then group then similar to packages, where each group has file paths in order in which they should be created in the group
+create a list of 1-D list containing isolated groups of files which are isolated and not dependent on other file groups.
+Your output will be of structure- {output}
 
-        print(self.project_files)
-        print('\n===========================================\n')
-        # print(self.related_files)
-        print('\n===========================================\n')
-        print(self.flow)
+file structure:-
+{self.file_structure}
+
+file paths:- {self.file_paths}
+
+Project Description:-
+{self.project_details}
+            '''
+        )
+        self.packages = response['isolated_groups']
+
 
         # Clean the base directory
         clean_directory(BASE_FOLDER)
 
         # Create the file structure
-        create_file_structure(BASE_FOLDER, self.project_files)
+        create_file_structure(BASE_FOLDER, self.file_paths)
+
 
     def file_writer(self):
         system_content = """You are a professional software developer with knowledge of all the file structures and standards followed in every language
@@ -80,7 +91,7 @@ class project_creator:
 """
 
         user_content = """Analyze the based on the project description and code of each file and their dependencies on each other and Write a high quality code by keeping track of related files generate code for the file {file_name}
-Highly causious of relative paths and imports
+Be very careful of relative paths and imports and only do correct imports
 
 Project description:
 {project_description}
@@ -91,15 +102,17 @@ Project structure:
 Project life flow: {flow}
 
 """
-        for i in range(len(self.project_files)):
+        for i in range(len(self.file_paths)):
 
-            file = self.project_files[i]
-            if file.split('.')[-1].lower() in ['md', 'gitignore', 'jpg', 'jpeg', 'png'] or file in self.files_code:
+            file = self.file_paths[i]
+            if file.split('.')[-1] in ['md', 'gitignore', 'jpg', 'jpeg', 'png'] or file in self.file_codes:
                 continue
 
             files_code_str = ""
-            for k in self.project_files[ max(0, -5+i) :i]:
-                files_code_str += f"CODE for FILE NAME and PATH: {self.files_code[k]}:\n" + "="*50 + "\n\n"
+            for k in self.file_paths[ max(0, -5+i) :i]:
+                if k.split('.')[-1] in ['md', 'gitignore', 'jpg', 'jpeg', 'png'] or k in self.file_codes:
+                    continue
+                files_code_str += f"CODE for FILE NAME and PATH: {self.file_codes[k]}:\n" + "="*50 + "\n\n"
 
             print("Generating code for: ", file)
             # print(files_code_str)
@@ -114,8 +127,28 @@ Project life flow: {flow}
                         flow=self.flow) + files_code_str
                     )
                 ).replace(codetype_names[file.split('.')[-1]], "")
-            self.files_code[file] = code
+            self.file_codes[file] = code
             content_writer(file, code)
+
+
+        
+
+
+class ProjectAnalyzer:
+    def __init__(self) -> None:
+        # Generate and print the directory structure for the selected project
+        project_path = os.path.join('project')
+        directory_structure = get_directory_structure_as_string(project_path)
+
+        self.project_description = ""
+        
+        self.file_structure = directory_structure
+        self.file_paths = {}
+        self.file_codes = {}
+        self.file_summeries = {}
+
+
+
 
 
 
@@ -141,7 +174,7 @@ def identifier(content):
     return content[i:j]
 
 
-def gpt_bot(system_content, user_content, model="gpt-4o", temperature=0.3, max_tokens=4000):
+def gpt_bot(system_content, user_content, model="gpt-4o", temperature=0.2, max_tokens=4000):
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -154,7 +187,7 @@ def gpt_bot(system_content, user_content, model="gpt-4o", temperature=0.3, max_t
     return response.choices[0].message.content
 
 
-def quick_bot(user_content, model="gpt-4o-mini", temperature=0.0):
+def quick_bot(user_content, model="gpt-4o-mini", temperature=0.2):
     system_content = """Quickly respond to the user query. Your output will be a json based on user query."""
     response = client.chat.completions.create(
         model=model,
@@ -191,4 +224,6 @@ def create_file_structure(base_dir, file_structure):
 
 
 if __name__=="__main__":
-    creator = project_creator()
+    # project_info = input("Enter complete detail of the project: ")
+    project_info = "Create a full e-commerce demo website"
+    creator = ProjectCreator(project_info)

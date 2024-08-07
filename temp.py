@@ -1,7 +1,8 @@
-from creator import gpt_bot
+import os
 
+from reader import get_directory_structure_as_string
 
-print(gpt_bot("write sample dependencies list for requirements.txt file.", "Write a sample content for requirements.txt file"))
-
-
-# html, javascript, python, css, vue
+# Generate and print the directory structure for the selected project
+project_path = os.path.join('project', os.listdir('project')[0])
+directory_structure = get_directory_structure_as_string(project_path)
+print(directory_structure)
