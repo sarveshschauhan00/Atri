@@ -92,13 +92,18 @@ Project life flow: {flow}
 
 """
         for i in range(len(self.project_files)):
-
             file = self.project_files[i]
+
+            if file[-1] == '/':
+                continue
+
             if file.split('.')[-1].lower() in ['md', 'gitignore', 'jpg', 'jpeg', 'png'] or file in self.files_code:
                 continue
 
             files_code_str = ""
             for k in self.project_files[ max(0, -5+i) :i]:
+                if k.split('.')[-1].lower() in ['md', 'gitignore', 'jpg', 'jpeg', 'png'] or k in self.files_code:
+                    continue
                 files_code_str += f"CODE for FILE NAME and PATH: {self.files_code[k]}:\n" + "="*50 + "\n\n"
 
             print("Generating code for: ", file)
