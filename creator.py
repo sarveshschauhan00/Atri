@@ -23,7 +23,7 @@ codetype_names = {
 class ProjectCreator:
     def __init__(self, project_info) -> None:
         self.project_details = gpt_bot(
-            "Act as a python developer consultant, your job is to understand user need and what user wants to create as in project, and according to your understanding describe the working of the project and how to create this in python. Give this project a name and then tell structure of this project in detail in very clear language in less than 1000 words",
+            "Act as a professional consultant, your job is to understand user need and what user wants to create as in project, and according to your understanding describe the features of this project. Give this project a name and working of this project in detail in very clear language in less than 1000 words. Do not write any code",
             project_info
             )
         print(self.project_details)
@@ -225,5 +225,5 @@ def create_file_structure(base_dir, file_structure):
 
 if __name__=="__main__":
     # project_info = input("Enter complete detail of the project: ")
-    project_info = "Create a full e-commerce demo website"
+    project_info = "Create a demo e-commerce website and for database use csv files"
     creator = ProjectCreator(project_info)
