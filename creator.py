@@ -20,6 +20,34 @@ codetype_names = {
 }
 
 
+def product_manager():
+    """Initiates the Project: The Product Manager starts by defining the vision and goals of the project.
+    They conduct market research, gather user requirements, and prioritize features. This sets the foundation for the project."""
+    pass
+
+def project_manager():
+    """Plans the Project: The Project Manager creates a project plan, outlining timelines, resources, and milestones.
+    They coordinate between the various teams, ensuring everyone is aligned and aware of their responsibilities."""
+    pass
+
+def designer():
+    """Designs the User Interface: The UI/UX Designer creates wireframes, prototypes, and visual designs that focus on the user experience. 
+    These designs are then reviewed and finalized, setting the stage for front-end development."""
+    pass
+
+def developer():
+    pass
+
+def tester():
+    """Tests the Software: The QA Engineer conducts various tests (unit, integration, system, and user acceptance testing) 
+    to identify bugs and ensure the software meets the required quality standards. 
+    They work closely with developers to address any issues that arise."""
+    pass
+
+def human():
+    pass
+
+
 class ProjectCreator:
     def __init__(self, project_info) -> None:
         self.project_details = gpt_bot(
