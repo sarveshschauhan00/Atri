@@ -1,8 +1,12 @@
 from openai import OpenAI
+from anthropic import Anthropic
 import os
 import json
+import re
+
 
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+anthropic_client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 def content_extractor(content):
     items = []
@@ -26,7 +30,6 @@ def gpt_bot(system_content, user_content, model="gpt-4o", temperature=0.2, max_t
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": system_content},
             {"role": "user", "content": user_content}
         ],
         temperature=temperature,
@@ -35,10 +38,11 @@ def gpt_bot(system_content, user_content, model="gpt-4o", temperature=0.2, max_t
     return response.choices[0].message.content
 
 
-def quick_bot(user_content, model="gpt-4o-mini", temperature=0.2, max_tokens=4000):
-    system_content = """Quickly respond to the user query."""
+def quick_bot(user_content, model="gpt-4o-mini", temperature=0.0, max_tokens=4096):
+    system_content = """Quickly respond to the user query. Your output will be a json based on the user query."""
     response = client.chat.completions.create(
         model=model,
+        response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": system_content},
             {"role": "user", "content": user_content}
@@ -47,4 +51,33 @@ def quick_bot(user_content, model="gpt-4o-mini", temperature=0.2, max_tokens=400
         max_tokens=max_tokens
     )
     # print(response)
-    return response.choices[0].message.content
+    return json.loads(response.choices[0].message.content)
+
+
+def claude_bot(data, temperature=0.7):
+    response = anthropic_client.messages.create(
+        model="claude-3-5-sonnet-20240620",
+        max_tokens=4000,
+        messages=[
+            {"role": "user", "content": data}
+        ],
+        # system=system_content,
+        temperature=temperature
+    )
+    return response.content[0].text
+
+
+def claude_bot2(system_content, data, temperature=0.7):
+    response = anthropic_client.messages.create(
+        model="claude-3-5-sonnet-20240620",
+        max_tokens=4000,
+        messages=[
+            {"role": "user", "content": data}
+        ],
+        system=system_content,
+        temperature=temperature
+    )
+    return response.content[0].text
+
+def tag_extractor(content, tag):
+    return re.findall(fr'<{tag}>(.*?)</{tag}>', content, re.DOTALL)
